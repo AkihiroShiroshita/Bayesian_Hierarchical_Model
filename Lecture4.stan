@@ -1,4 +1,4 @@
-//Hierchical model
+//Random intercept model
 data {
   int N;
   int<lower=0, upper=1> death[N];

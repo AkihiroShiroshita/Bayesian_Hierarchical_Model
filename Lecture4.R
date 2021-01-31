@@ -12,8 +12,7 @@ glm_bernoulli_brms <- brm(
   prior = c(set_prior("", class = "Intercept"))
 )
 glm_bernoulli_brms
-#Hierarchical model
-sample_size <- nrow(df_c)
+#Random intercept model 
 formula <- formula(death ~ age)
 design_mat <- model.matrix(formula, df_c)
 data_list <- list(
@@ -22,13 +21,27 @@ data_list <- list(
   age = df_c$age
 )
 data_list
-glmm <- stan(
+glmm1 <- stan(
   file = "Lecture4.stan",
   data = data_list,
   seed = 1
 )
-mcmc_rhat(rhat(glmm))
-print(glmm,
+mcmc_rhat(rhat(glmm1))
+print(glmm1,
       pars = c("Intercept", "b_age", "sigma_r"),
       probs = c(0.025, 0.5, 0.975))
-#Random intercept
+mcmc_sample <- rstan::extract(glmm1, permuted = FALSE)
+age_mcmc_vec <- as.vector(mcmc_sample[,,"b_age"])
+age_df <- data.frame(age_mcmc_sample = age_mcmc_vec)
+ggplot(data = age_df, mapping = aes(x = age_mcmc_sample)) +
+  geom_density(size = 1.5)
+#Another way
+glmm_brms <- brm(
+  formula = death ~ age + (1|id),
+  family = bernoulli(),
+  data = df_c,
+  seed = 1,
+  prior = c(set_prior("", class = "Intercept"),
+            set_prior("", class = "sd"))
+)
+glmm_brms
