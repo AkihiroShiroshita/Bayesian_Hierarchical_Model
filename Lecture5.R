@@ -14,7 +14,8 @@ data_list <- list(
   N = nrow(df_c),
   N_id = length(unique(df_c$id)),
   Y = df_c$death,
-  X = df_c$age
+  X = df_c$age,
+  s_id = df_c$id
 )
 data_list
 glmm2 <- stan(
@@ -23,11 +24,11 @@ glmm2 <- stan(
   seed = 1
 )
 mcmc_rhat(rhat(glmm2))
-print(glmm2,
-      pars = c("Intercept", "b_age", "sigma_r"),
-      probs = c(0.025, 0.5, 0.975))
 mcmc_sample <- rstan::extract(glmm2, permuted = FALSE)
-age_mcmc_vec <- as.vector(mcmc_sample[,,"b_age"])
+head(mcmc_sample)
+age_mcmc_vec <- as.vector(mcmc_sample[,,"a_id[1]"])
 age_df <- data.frame(age_mcmc_sample = age_mcmc_vec)
 ggplot(data = age_df, mapping = aes(x = age_mcmc_sample)) +
   geom_density(size = 1.5)
+median(age_mcmc_vec)
+quantile(age_mcmc_vec, probs = c(0.025, 0.975))
